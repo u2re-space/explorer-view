@@ -3,13 +3,13 @@ import { addEvent, preloadStyle } from "fest/dom";
 import { affected, propRef } from "fest/object";
 
 //
-import { UIElement } from "../base/UIElement";
+import { UIElement } from "./UIElement";
 
 //
 import FileManagerContent from "./FileManagerContent";
 
 // @ts-ignore
-import fmCss from "./FileManager.scss?inline";
+import fmCss from "../scss/FileManager.scss?inline";
 
 //
 const styled = preloadStyle(fmCss);

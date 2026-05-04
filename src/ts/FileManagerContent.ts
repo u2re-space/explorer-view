@@ -6,7 +6,7 @@ import { ref } from "fest/object";
 import { UIElement } from "fl-ui/base/UIElement";
 
 // @ts-ignore
-import fmCss from "./FileManagerContent.scss?inline";
+import fmCss from "../scss/FileManagerContent.scss?inline";
 import { type FileEntryItem, FileOperative } from "./Operative";
 
 //

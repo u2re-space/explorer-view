@@ -7,17 +7,17 @@
 
 import type { ViewOptions as ShellViewOptions, ViewLifecycle } from "shells/types";
 import type { BaseViewOptions } from "views/types";
-import type { ViewOptions as RegistryViewOptions } from "../../../../apps/CrossWord/src/frontend/views/registry";
-import { createViewConstructor, ViewBase } from "../../../../apps/CrossWord/src/frontend/views/registry";
+import type { ViewOptions as RegistryViewOptions } from "views/types";
+import { createViewConstructor, ViewBase } from "views/registry";
 import { loadAsAdopted, removeAdopted } from "fest/dom";
-import type { FileManager } from "fest/fl-ui";
+import type { FileManager } from "./ts/FileManager";
 import type { ExplorerInjectApi } from "./inject";
 import type { LocalFileManager } from "./runtime";
 import { wireExplorerSubtree } from "./runtime";
 import { ExplorerChannelAction } from "views/apis/channel-actions";
 
 /** Re-export + ensure `ui-file-manager` is defined when this module loads. */
-export { FileManager, FileManagerContent } from "fest/fl-ui";
+export { FileManager, FileManagerContent } from "./ts/FileManager";
 
 export type { ExplorerInjectApi } from "./inject";
 export { registerExplorerInject, mergeExplorerInject } from "./inject";

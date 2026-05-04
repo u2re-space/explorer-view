@@ -1,7 +1,7 @@
-/* FL-UI file-manager chrome (CrossWord vendored symlinks under shared/fest/fl-ui). */
-@use "../../../../shared/fest/fl-ui/styles/ui/explorer" as *;
-@use "../../../../shared/fest/fl-ui/styles/ui/explorer-content" as *;
-@use "../../../../shared/fest/fl-ui/styles/ui/essentials" as *;
+/* FL-UI file-manager chrome, scoped to the standalone explorer view. */
+@use "./scss/explorer" as *;
+@use "./scss/explorer-content" as *;
+@use "./scss/essentials" as *;
 
 @mixin spinner($size, $border, $accent, $duration: 0.8s) {
     inline-size: $size;
