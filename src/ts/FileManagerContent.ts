@@ -3,7 +3,7 @@ import { addEvent, handleStyleChange, isInFocus, preloadStyle } from "fest/dom";
 import { ref } from "fest/object";
 
 //
-import { UIElement } from "fl-ui/base/UIElement";
+import { UIElement } from "./UIElement";
 
 // @ts-ignore
 import fmCss from "../scss/FileManagerContent.scss?inline";

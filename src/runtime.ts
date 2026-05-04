@@ -1,5 +1,5 @@
 /**
- * Wires FL-UI `<ui-file-manager>` inside the explorer light-DOM shell: viewer/workcenter IPC,
+ * Wires `<ui-file-manager>` inside the explorer light-DOM shell: viewer/workcenter IPC,
  * speed-dial pin, path persistence, shell messages. Behavior ported from `CWExplorer.ts` with
  * explicit imports and an inject/merge API.
  */

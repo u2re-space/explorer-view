@@ -1,8 +1,8 @@
 /**
  * Explorer View
  *
- * Shell-agnostic file explorer. Shell mounts `render()` output (light DOM); wires FL-UI
- * `<ui-file-manager>` via `runtime.ts` on lifecycle mount (matches AirPad/Simplified CE pattern).
+ * Shell-agnostic file explorer. Shell mounts `render()` output (light DOM); wires
+ * `<ui-file-manager>` (lur.e + veela/icon) via `runtime.ts` on lifecycle mount.
  */
 
 import type { ViewOptions as ShellViewOptions, ViewLifecycle } from "shells/types";
@@ -170,7 +170,7 @@ export const CwViewExplorer = createViewConstructor(TAG, (Base: typeof ViewBase)
             return true;
         }
 
-        /** Imperative API — channels / tooling (FL-UI `ui-file-manager` when wired). */
+        /** Imperative API — channels / tooling (`ui-file-manager` when wired). */
         navigateExplorer(path: string): void | Promise<void> {
             const p = String(path || "").trim();
             if (!p || !this.wiredFileManager) return;
