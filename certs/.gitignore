@@ -1,0 +1,6 @@
+# Dev TLS material — generate locally (`npm run ssl:localhost`).
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12

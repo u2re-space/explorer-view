@@ -1,7 +1,7 @@
 {
   "name": "explorer-view",
   "version": "1.0.0",
-  "description": "Standalone file explorer view module",
+  "description": "Standalone file explorer view module. Dev HTTPS: PEM files in certs/ (see npm run ssl:localhost); else plugin-basic-ssl. Port 443 may need privileges; npm run dev:8443 otherwise.",
   "type": "module",
   "main": "./dist/explorer-view.js",
   "module": "./dist/explorer-view.js",
@@ -11,7 +11,9 @@
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev:8443": "VIEW_DEV_PORT=8443 vite --host 0.0.0.0",
     "demo": "npm run dev",
+    "ssl:localhost": "mkdir -p certs && openssl req -x509 -newkey rsa:2048 -nodes -keyout certs/key.pem -out certs/cert.pem -days 825 -subj '/CN=localhost'",
     "test": "vite build --config vite.config.js --mode test",
     "build": "vite build --config vite.config.js",
     "preview": "vite preview"

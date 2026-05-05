@@ -6,7 +6,6 @@
 
 import type { ShellContext } from "shells/types";
 import { observe } from "fest/object";
-import { sendViewProtocolMessage } from "com/core/UniformViewTransport";
 import { StorageKeys, getString, setString } from "core/storage";
 import {
     addSpeedDialItem,
@@ -25,6 +24,7 @@ import {
     requestOpenView,
     guessNextShortcutCell
 } from "./utils";
+import { sendViewProtocolMessage } from "com/core/UniformViewTransport";
 
 export type LocalFileManager = HTMLElement & {
     path: string;

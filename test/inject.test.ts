@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mergeExplorerInject, type ExplorerInjectApi } from "./inject.ts";
+import { mergeExplorerInject, type ExplorerInjectApi } from "../src/inject.js";
 
 test("mergeExplorerInject returns undefined when nothing passed", () => {
     assert.equal(mergeExplorerInject(), undefined);

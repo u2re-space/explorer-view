@@ -27,8 +27,8 @@
             max-inline-size: none;
             flex-grow: 1;
 
-            background-color: var(--color-surface);
-            color: var(--color-on-surface);
+            background-color: var(--color-surface, light-dark(#f7f8fc, #1a1d24));
+            color: var(--color-on-surface, light-dark(#1a1c1f, #e8eaed));
         }
 
         .fm-root {
@@ -54,7 +54,7 @@
             border-radius: 0;
             padding: 0.5rem 0.75rem;
             line-height: normal;
-            background: var(--color-surface, #1e1e1e);
+            background: var(--color-surface, light-dark(#f7f8fc, #1a1d24));
             box-shadow: 0 1px 0 color-mix(in oklab, var(--color-on-surface, #fff) 6%, transparent);
 
             button, input {
@@ -70,7 +70,7 @@
                 padding: 0.45rem 0.85rem;
                 overflow: auto;
                 border-radius: 999px;
-                font: 0.8125rem/1.35 ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+                font: 0.8125rem/1.35 var(--explorer-font-mono, ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace);
                 background: color-mix(in oklab, var(--color-on-surface, #fff) 6%, transparent);
             }
 

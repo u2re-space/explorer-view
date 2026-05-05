@@ -47,6 +47,7 @@ const ensureStyle = (): void => {
     const style = document.createElement("style");
     style.id = "cw-unified-context-menu-style";
     style.textContent = `
+        /* WHY: Menu is mounted on body/overlay — use app design tokens (Veela) when present, else light-dark(). */
         .cw-context-menu-layer {
             position: fixed;
             inset: 0;
@@ -60,11 +61,22 @@ const ensureStyle = (): void => {
             max-inline-size: min(320px, calc(100vw - 24px));
             padding: 0.4rem;
             border-radius: 14px;
-            border: none;
-            background: color-mix(in oklab, #0c1018 88%, #1a2842 12%);
+            border: 1px solid color-mix(in oklab, var(--color-outline, light-dark(rgba(15, 23, 42, 0.12), rgba(255, 255, 255, 0.08))) 100%, transparent);
+            color-scheme: light dark;
+            background: color-mix(
+                in oklab,
+                var(--color-surface-container, var(--color-surface-elevated, var(--color-surface, light-dark(#f1f5f9, #1e293b)))) 96%,
+                transparent
+            );
             box-shadow:
-                0 14px 36px rgba(0, 0, 0, 0.45),
-                0 0 0 1px rgba(255, 255, 255, 0.06);
+                var(
+                    --elev-3,
+                    light-dark(
+                        0 14px 36px rgba(15, 23, 42, 0.12),
+                        0 14px 36px rgba(0, 0, 0, 0.45)
+                    )
+                ),
+                0 0 0 1px color-mix(in oklab, var(--color-on-surface, light-dark(#0f172a, #f8fafc)) 7%, transparent);
             backdrop-filter: blur(14px);
             pointer-events: auto;
             user-select: none;
@@ -95,7 +107,7 @@ const ensureStyle = (): void => {
             border: 0;
             border-radius: 10px;
             background: transparent;
-            color: #eaf0ff;
+            color: var(--color-on-surface, light-dark(#0f172a, #e8eaed));
             padding: 0.5rem 0.6rem;
             min-block-size: 2.35rem;
             font-size: 0.8125rem;
@@ -108,7 +120,7 @@ const ensureStyle = (): void => {
         .cw-context-menu__item:hover,
         .cw-context-menu__item:focus-visible {
             outline: none;
-            background: rgba(137, 176, 255, 0.14);
+            background: color-mix(in oklab, var(--color-on-surface, light-dark(#0f172a, #ffffff)) 8%, transparent);
         }
 
         .cw-context-menu__item[disabled] {
@@ -117,7 +129,7 @@ const ensureStyle = (): void => {
         }
 
         .cw-context-menu__item--danger {
-            color: #ff9da1;
+            color: var(--color-error, light-dark(#b91c1c, #fca5a5));
         }
 
         .cw-context-menu__icon {

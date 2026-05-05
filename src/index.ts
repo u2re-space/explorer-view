@@ -5,9 +5,7 @@
  * `<ui-file-manager>` (lur.e + veela/icon) via `runtime.ts` on lifecycle mount.
  */
 
-import type { ViewOptions as ShellViewOptions, ViewLifecycle } from "shells/types";
-import type { BaseViewOptions } from "views/types";
-import type { ViewOptions as RegistryViewOptions } from "views/types";
+import type { ViewOptions, ViewLifecycle, BaseViewOptions } from "views/types";
 import { createViewConstructor, ViewBase } from "views/registry";
 import { loadAsAdopted, removeAdopted } from "fest/dom";
 import type { FileManager } from "./ts/FileManager";
@@ -15,18 +13,60 @@ import type { ExplorerInjectApi } from "./inject";
 import type { LocalFileManager } from "./runtime";
 import { wireExplorerSubtree } from "./runtime";
 import { ExplorerChannelAction } from "views/apis/channel-actions";
+import { applyExplorerColorScheme, subscribeExplorerSystemTheme, type ExplorerColorScheme } from "./theme";
 
 /** Re-export + ensure `ui-file-manager` is defined when this module loads. */
 export { FileManager, FileManagerContent } from "./ts/FileManager";
 
 export type { ExplorerInjectApi } from "./inject";
-export { registerExplorerInject, mergeExplorerInject } from "./inject";
+export { registerExplorerInject, mergeExplorerInject, getRegisteredExplorerInject } from "./inject";
 export { wireExplorerSubtree } from "./runtime";
+export type { ExplorerWireOptions, LocalFileManager } from "./runtime";
+export type { ExplorerColorScheme } from "./theme";
+export {
+    applyExplorerColorScheme,
+    resolveExplorerColorSchemePreference,
+    readAppDataTheme,
+    subscribeExplorerSystemTheme
+} from "./theme";
 
 // @ts-ignore — Vite inline SCSS
 import style from "./index.scss?inline";
 
-export type ExplorerOptions = BaseViewOptions & { explorerInject?: ExplorerInjectApi };
+export type ExplorerOptions = BaseViewOptions & {
+    explorerInject?: ExplorerInjectApi;
+    /** Light / dark / system — mirrored from `params.colorScheme` when unset. */
+    colorScheme?: ExplorerColorScheme;
+};
+
+function coerceColorScheme(
+    raw: unknown
+): ExplorerColorScheme | undefined {
+    if (raw === "light" || raw === "dark" || raw === "system") return raw;
+    if (typeof raw === "string") {
+        const t = raw.trim().toLowerCase();
+        if (t === "light" || t === "dark" || t === "system") return t;
+    }
+    return undefined;
+}
+
+function resolveExplorerOptionsColorScheme(opts?: ExplorerOptions | ViewOptions | null): ExplorerColorScheme | undefined {
+    if (!opts) return undefined;
+    const ex = opts as ExplorerOptions;
+    if (ex.colorScheme) return ex.colorScheme;
+    const p = ex.params?.colorScheme ?? ex.params?.theme;
+    return coerceColorScheme(p);
+}
+
+function normalizeSetColorSchemePayload(payload: unknown): ExplorerColorScheme | undefined {
+    if (payload === undefined || payload === null) return undefined;
+    if (typeof payload === "string") return coerceColorScheme(payload.trim());
+    if (typeof payload === "object") {
+        const o = payload as Record<string, unknown>;
+        return coerceColorScheme(o.colorScheme ?? o.scheme ?? o.theme);
+    }
+    return undefined;
+}
 
 function buildExplorerShell(): HTMLElement {
     const shell = document.createElement("div");
@@ -79,26 +119,35 @@ export const CwViewExplorer = createViewConstructor(TAG, (Base: typeof ViewBase)
         private explorerInject?: ExplorerInjectApi;
 
         private _sheet: CSSStyleSheet | null = null;
+        private themeSync: ReturnType<typeof subscribeExplorerSystemTheme> | null = null;
 
         lifecycle: ViewLifecycle = {
             onMount: () => {
-                this._sheet ??= loadAsAdopted(style) as CSSStyleSheet;
                 this.attachExplorerWire();
             },
             onUnmount: () => {
+                this.themeSync?.disconnect();
+                this.themeSync = null;
                 this.detachExplorerWire();
                 removeAdopted(this._sheet);
                 this._sheet = null;
             },
             onShow: () => {
                 this._sheet ??= loadAsAdopted(style) as CSSStyleSheet;
+                this.syncExplorerThemeSubscription();
                 if (!this.explorerCleanup && this.explorerRoot) {
                     this.attachExplorerWire();
                 }
             },
             onHide: () => {
+                this.themeSync?.disconnect();
+                this.themeSync = null;
                 this.detachExplorerWire();
-                removeAdopted(this._sheet);
+                try {
+                    if (this._sheet) removeAdopted(this._sheet);
+                } catch {
+                    /* ignore */
+                }
                 this._sheet = null;
             }
         };
@@ -106,20 +155,39 @@ export const CwViewExplorer = createViewConstructor(TAG, (Base: typeof ViewBase)
         constructor(options?: ExplorerOptions) {
             super();
             if (options) {
-                this.options = options as unknown as RegistryViewOptions;
+                this.options = options as unknown as ViewOptions;
                 this.explorerInject = options.explorerInject;
                 if (options.params?.path) {
                     this.initialPath = String(options.params.path);
                 }
+                const fromParams = coerceColorScheme(options.params?.colorScheme ?? options.params?.theme);
+                if (!options.colorScheme && fromParams) {
+                    (this.options as ExplorerOptions).colorScheme = fromParams;
+                }
             }
         }
 
-        render = (options?: ShellViewOptions): HTMLElement => {
+        /** Imperative theme — persists on view options for later re-renders. */
+        setExplorerColorScheme(mode: ExplorerColorScheme): void {
+            (this.options as ExplorerOptions).colorScheme = mode;
+            applyExplorerColorScheme(this.explorerRoot, mode);
+            this.syncExplorerThemeSubscription();
+        }
+
+        /** When using `system`, follow `html[data-theme]` + OS scheme; rebuild subscription on mode change. */
+        private syncExplorerThemeSubscription(): void {
+            this.themeSync?.disconnect();
+            this.themeSync = null;
+            if (!this.explorerRoot) return;
+            this.themeSync = subscribeExplorerSystemTheme(this.explorerRoot, () => (this.options as ExplorerOptions).colorScheme ?? "system");
+        }
+
+        render = (options?: ViewOptions): HTMLElement => {
             if (options) {
                 this.options = {
                     ...(this.options as object),
                     ...(options as object)
-                } as RegistryViewOptions;
+                } as ViewOptions;
                 const p = (options as BaseViewOptions)?.params?.path;
                 if (p) {
                     this.initialPath = String(p);
@@ -131,13 +199,19 @@ export const CwViewExplorer = createViewConstructor(TAG, (Base: typeof ViewBase)
             }
 
             if (this.explorerCleanup) {
+                this.themeSync?.disconnect();
+                this.themeSync = null;
                 this.detachExplorerWire();
             }
 
-            this._sheet = loadAsAdopted(style) as CSSStyleSheet;
-
             const hasFileManager = Boolean(customElements.get("ui-file-manager"));
             this.explorerRoot = hasFileManager ? buildExplorerShell() : buildFallbackShell();
+
+            const scheme =
+                resolveExplorerOptionsColorScheme(options as ExplorerOptions | null) ??
+                resolveExplorerOptionsColorScheme(this.options as ExplorerOptions | null);
+            applyExplorerColorScheme(this.explorerRoot, scheme ?? "system");
+            this.syncExplorerThemeSubscription();
 
             return this.explorerRoot;
         };
@@ -147,11 +221,26 @@ export const CwViewExplorer = createViewConstructor(TAG, (Base: typeof ViewBase)
         }
 
         canHandleMessage(messageType: string): boolean {
-            return ["file-save", "navigate-path", "content-explorer"].includes(messageType);
+            return [
+                "file-save",
+                "navigate-path",
+                "content-explorer",
+                ExplorerChannelAction.SetColorScheme
+            ].includes(messageType);
         }
 
         async handleMessage(message: unknown): Promise<void> {
-            const msg = message as { type?: string; data?: { path?: string; into?: string; file?: File } };
+            const msg = message as {
+                type?: string;
+                data?: { path?: string; into?: string; file?: File; colorScheme?: unknown; scheme?: unknown; theme?: unknown };
+            };
+            if (msg.type === ExplorerChannelAction.SetColorScheme) {
+                const next =
+                    normalizeSetColorSchemePayload(msg.data?.colorScheme ?? msg.data?.scheme ?? msg.data?.theme) ??
+                    "system";
+                this.setExplorerColorScheme(next);
+                return;
+            }
             if (msg.data?.file instanceof File) {
                 await this.saveIncomingFileToWorkspace(msg.data.file, msg.data.path || msg.data.into);
                 return;
@@ -229,6 +318,15 @@ export const CwViewExplorer = createViewConstructor(TAG, (Base: typeof ViewBase)
                     const fm = this.wiredFileManager as unknown as FileManager | null;
                     fm?.requestPaste?.();
                     return true;
+                }
+                case ExplorerChannelAction.SetColorScheme: {
+                    const next = normalizeSetColorSchemePayload(payload) ?? "system";
+                    this.setExplorerColorScheme(next);
+                    return true;
+                }
+                case "get-color-scheme": {
+                    const o = this.options as ExplorerOptions;
+                    return o.colorScheme ?? resolveExplorerOptionsColorScheme(o) ?? "system";
                 }
                 default:
                     return this.handleMessage({

@@ -35,8 +35,8 @@
             border-radius: 0;
             margin: 0;
 
-            background-color: var(--color-surface);
-            color: var(--color-on-surface);
+            background-color: var(--color-surface, light-dark(#f7f8fc, #1a1d24));
+            color: var(--color-on-surface, light-dark(#1a1c1f, #e8eaed));
         }
 
         /* Grid with subgrid columns */

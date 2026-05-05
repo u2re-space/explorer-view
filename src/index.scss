@@ -17,17 +17,16 @@
 /* -------------------------------------------------------------------------- */
 @layer view-explorer {
     @layer tokens {
+        /*
+         * Optional shell hook — when embedded with `data-view`, tune layout hints.
+         */
         :root:has([data-view="explorer"]),
         html:has([data-view="explorer"]) {
             --view-layout: "flex";
             --view-content-max-width: none;
         }
 
-        /*
-         * Theme bridge: app tokens → file manager (shadow descendants inherit
-         * --color-* from the host tree).
-         */
-        [data-view="explorer"] {
+        .view-explorer {
             --view-border: color-mix(in oklab, var(--color-outline-variant, #888) 45%, transparent);
             --view-fg-muted: color-mix(in oklab, var(--color-on-surface, #ccc) 72%, transparent);
             --view-hover-bg: color-mix(in oklab, var(--color-primary, #3794ff) 12%, transparent);
@@ -35,6 +34,46 @@
             --view-selected-border: var(--color-primary, #3794ff);
             --explorer-menu-radius: 0.75rem;
             --explorer-menu-pad: 0.35rem;
+            /*
+             * Font stacks — shell may override `--font-family`; standalone demo stays readable without app CSS.
+             */
+            --explorer-font-sans:
+                var(--font-family, "InterVariable", "Inter", "Segoe UI Variable", ui-sans-serif, system-ui, -apple-system,
+                BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+            --explorer-font-mono:
+                ui-monospace, "Cascadia Code", "Cascadia Mono", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+        }
+
+        /*
+         * Material-like fallbacks when the host omits semantic tokens — split by resolved scheme.
+         * `applyExplorerColorScheme()` sets `data-explorer-color-scheme` on `.view-explorer`.
+         */
+        .view-explorer[data-explorer-color-scheme="light"] {
+            --color-surface: #f7f8fc;
+            --color-on-surface: #1a1c1f;
+            --color-on-surface-variant: #44474f;
+            --color-primary: #1362c3;
+            --color-on-primary: #ffffff;
+            --color-outline-variant: #c3c7d1;
+            --color-surface-container: #eaecef;
+            --color-surface-container-high: #e1e4eb;
+            --color-surface-container-highest: #d7dae4;
+            --color-error: #ba1a1a;
+            --error-color: #ba1a1a;
+        }
+
+        .view-explorer[data-explorer-color-scheme="dark"] {
+            --color-surface: #1a1d24;
+            --color-on-surface: #e8eaed;
+            --color-on-surface-variant: #c4c6d0;
+            --color-primary: #6eb4ff;
+            --color-on-primary: #08294a;
+            --color-outline-variant: #5a5f6a;
+            --color-surface-container: #272a31;
+            --color-surface-container-high: #31353d;
+            --color-surface-container-highest: #3b404b;
+            --color-error: #ffb4ab;
+            --error-color: #ffb4ab;
         }
     }
 
@@ -59,11 +98,11 @@
             contain: layout style;
             block-size: 100%;
             min-block-size: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-family, var(--explorer-font-sans, system-ui, sans-serif));
             font-size: 0.875rem;
             line-height: 1.5;
-            color: var(--color-on-surface, var(--view-fg, #e8e8e8));
-            background: var(--color-surface, var(--view-bg, #1e1e1e));
+            color: var(--color-on-surface, var(--view-fg, light-dark(#1a1c1f, #e8eaed)));
+            background: var(--color-surface, var(--view-bg, light-dark(#f7f8fc, #1a1d24)));
         }
 
         cw-view-explorer {
@@ -85,6 +124,7 @@
             inline-size: 100%;
             min-block-size: 0;
             min-inline-size: 0;
+            font-family: var(--font-family, var(--explorer-font-sans, system-ui, sans-serif));
             background: var(--color-surface, var(--view-bg));
             color: var(--color-on-surface, var(--view-fg));
             border: none;
@@ -220,13 +260,25 @@
             min-inline-size: 12rem;
             padding: var(--explorer-menu-pad, 0.35rem);
             border-radius: var(--explorer-menu-radius, 0.75rem);
-            border: none;
-            background: color-mix(in oklab, var(--color-surface-container-high, #2a2d33) 92%, #000 8%);
-            color: var(--color-on-surface, #eee);
+            border: 1px solid color-mix(in oklab, var(--color-outline, light-dark(rgba(15, 23, 42, 0.14), rgba(255, 255, 255, 0.08))) 100%, transparent);
+            color-scheme: light dark;
+            background: color-mix(
+                in oklab,
+                var(--color-surface-container-high, var(--color-surface-container, var(--color-surface, light-dark(#e2e8f0, #334155)))) 94%,
+                transparent
+            );
+            color: var(--color-on-surface, light-dark(#0f172a, #e8eaed));
             box-shadow:
-                0 8px 28px rgba(0, 0, 0, 0.38),
-                0 0 0 1px color-mix(in oklab, var(--color-on-surface, #fff) 8%, transparent);
+                var(
+                    --elev-3,
+                    light-dark(
+                        0 8px 26px rgb(15 23 42 / 0.12),
+                        0 8px 26px rgb(0 0 0 / 0.28)
+                    )
+                ),
+                0 0 0 1px color-mix(in oklab, var(--color-on-surface, light-dark(#0f172a, #fff)) 7%, transparent);
             backdrop-filter: blur(12px);
+            font-family: var(--font-family, var(--explorer-font-sans, system-ui, sans-serif));
             display: flex;
             flex-direction: column;
             gap: 0.2rem;

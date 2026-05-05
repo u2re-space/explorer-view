@@ -1,12 +1,38 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>explorer-view demo</title>
-</head>
-<body style="padding: 0px; margin: 0px; width: 100dvw; height: 100dvh; overflow: hidden;">
-    <main id="app" style="width: 100dvw; height: 100dvh; overflow: hidden;"></main>
-    <script type="module" src="/@fs/home/u2re-dev/U2RE.space/modules/views/shared/demo/main.ts"></script>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>explorer-view demo</title>
+        <!-- minimal normalize (shell only; explorer brings its own styles) -->
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            html {
+                -webkit-text-size-adjust: 100%;
+                height: 100%;
+            }
+            body {
+                margin: 0;
+                min-height: 100%;
+                padding: 0;
+                width: 100dvw;
+                height: 100dvh;
+                overflow: hidden;
+            }
+            #app {
+                width: 100dvw;
+                height: 100dvh;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <main id="app"></main>
+        <!-- WHY: basic-ssl dev URL is https://localhost:443 (override with VIEW_DEV_PORT). -->
+        <script type="module" src="/demo/boot.ts"></script>
+    </body>
 </html>
