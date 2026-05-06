@@ -81,7 +81,8 @@
             block-size: stretch;
             z-index: 1;
 
-            content-visibility: auto;
+            /* WHY: Match host — avoid blank grid rows under transformed DWM / floating window ancestors. */
+            content-visibility: visible;
             contain-intrinsic-size: 1px 2.625rem;
             contain: strict;
 

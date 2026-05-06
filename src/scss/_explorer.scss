@@ -18,7 +18,9 @@
             block-size: stretch;
             min-block-size: 0;
             min-inline-size: 0;
-            content-visibility: auto;
+            /* WHY: `content-visibility: auto` can skip painting when ancestors use transform/stacking
+             * (e.g. `.wf-frame-body { transform: translateZ(0) }`), so lists “vanish” in window frames. */
+            content-visibility: visible;
             border-radius: 0;
             overflow: hidden;
             margin: 0;

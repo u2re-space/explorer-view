@@ -71,6 +71,7 @@ function normalizeSetColorSchemePayload(payload: unknown): ExplorerColorScheme |
 function buildExplorerShell(): HTMLElement {
     const shell = document.createElement("div");
     shell.className = "view-explorer";
+    shell.setAttribute("data-view", "explorer");
     shell.setAttribute("aria-label", "File explorer");
     const content = document.createElement("div");
     content.className = "view-explorer__content";
@@ -85,6 +86,7 @@ function buildExplorerShell(): HTMLElement {
 function buildFallbackShell(): HTMLElement {
     const shell = document.createElement("div");
     shell.className = "view-explorer";
+    shell.setAttribute("data-view", "explorer");
     shell.setAttribute("aria-label", "File explorer (fallback)");
     const content = document.createElement("div");
     content.className = "view-explorer__content";
