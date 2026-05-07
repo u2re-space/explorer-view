@@ -19,38 +19,17 @@
             "@phosphor-icons/core/assets/*": [
                 "../../../node_modules/@phosphor-icons/core/assets/*"
             ],
-            "views/apis/channel-actions": [
-                "../../projects/subsystem/src/routing/api/channel-actions.ts"
-            ],
-            "com/core/UniformViewTransport": [
-                "../../shared/runtime/view-transport.ts"
-            ],
             "views/types": [
                 "../../shared/types.ts"
             ],
             "views/registry": [
                 "../../shared/registry.ts"
             ],
-            "shells/types": [
-                "../../shared/types.ts"
+            "views/apis/channel-actions": [
+                "../../projects/subsystem/src/routing/api/channel-actions.ts"
             ],
-            "core/*": [
-                "../../shared/src/*"
-            ],
-            "com/*": [
-                "../../shared/src/*"
-            ],
-            "shared/*": [
-                "../../shared/src/*"
-            ],
-            "@shared/*": [
-                "../../shared/*"
-            ],
-            "shells/*": [
-                "../../shared/views/*"
-            ],
-            "fonts/*": [
-                "../../shared/assets/fonts/*"
+            "com/config/Settings": [
+                "../../shared/runtime/settings-config.ts"
             ],
             "fest/*": [
                 "../../shared/fest/*"
@@ -89,11 +68,22 @@
                 "../../projects/shared/fest/polyfill/*"
             ],
             "veela-lib": [
-                "../../projects/veela.css/src/scss/lib/index.scss"
+                "../../projects/veela.css/src/scss/index.scss"
             ],
             "veela-lib/*": [
-                "../../projects/veela.css/src/scss/lib/*"
-            ]
+                "../../projects/veela.css/src/scss/*"
+            ],
+            "boot/*": ["../shared/src/boot/*"],
+            "views/*": ["../shared/views/*"],
+            "shells/*": ["../shared/shells/*"],
+            "core/*": ["../shared/src/*"],
+            "com/*": ["../shared/src/*"],
+            "shared/*": ["../shared/src/*"],
+            "@shared/*": ["../shared/*"],
+            "fonts/*": ["../shared/assets/fonts/*"],
+            "shells/immersive/index": ["../../shells/immersive-shell/src/index.ts"],
+            "shells/content/index": ["../../shells/content-shell/src/index.ts"],
+            "shells/minimal/preview": ["../../shells/minimal-shell/src/preview.ts"]
         },
         "target": "ESNext",
         "module": "ESNext",
