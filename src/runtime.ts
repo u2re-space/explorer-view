@@ -62,15 +62,15 @@ function setupExplorerEvents(
     const openFileInViewer = async (
         item: ExplorerFileItem | undefined,
         fullPath: string | undefined,
-        target: "window" | "base" = "window"
+        target: "window" | "base" | "immersive" = "window"
     ): Promise<boolean> => {
         const file = item?.file as File | undefined;
         if (!file || !isTextLikeFile(file)) return false;
         const sourcePath = String(fullPath || "");
-        if (target === "base") {
+        if (target === "base" || target === "immersive") {
             requestOpenView({
                 viewId: "viewer",
-                target: "base",
+                target: "immersive",
                 params: {
                     src: sourcePath,
                     filename: file.name || "",

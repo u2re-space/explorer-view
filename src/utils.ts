@@ -79,15 +79,17 @@ export const openExplorerContextMenu = (x: number, y: number, items: ContextMenu
 
 export const requestOpenView = (request: {
     viewId: string;
-    target?: "window" | "frame" | "shell" | "base" | "headless";
+    target?: "window" | "frame" | "shell" | "base" | "immersive" | "headless";
     params?: Record<string, string>;
 }): void => {
     const viewId = String(request?.viewId || "").trim().toLowerCase();
     if (!viewId) return;
+    const raw = request?.target || "window";
+    const target = raw === "base" ? "immersive" : raw;
     globalThis?.dispatchEvent?.(new CustomEvent("cw:view-open-request", {
         detail: {
             viewId,
-            target: request?.target || "window",
+            target,
             params: request?.params || {}
         }
     }));
