@@ -1,4 +1,5 @@
 import { speedDialItems } from "core/store/StateStorage";
+import { resolveOverlayMountPoint } from "boot/shell-slots";
 
 //
 export type ContextMenuItem = {
@@ -8,7 +9,15 @@ export type ContextMenuItem = {
     action: () => void;
 };
 
-export const openExplorerContextMenu = (x: number, y: number, items: ContextMenuItem[]): void => {
+export const openExplorerContextMenu = (
+    x: number,
+    y: number,
+    items: ContextMenuItem[],
+    options?: {
+        anchor?: Element | null;
+        resolveOverlayMountPoint?: (anchor?: Element | null) => HTMLElement;
+    }
+): void => {
     const menu = document.createElement("div");
     menu.className = "rs-explorer-context-menu";
     menu.setAttribute("role", "menu");
@@ -42,7 +51,10 @@ export const openExplorerContextMenu = (x: number, y: number, items: ContextMenu
         menu.append(button);
     }
 
-    document.body.append(menu);
+    const mount =
+        options?.resolveOverlayMountPoint?.(options?.anchor ?? null) ??
+        resolveOverlayMountPoint(options?.anchor ?? null);
+    mount.append(menu);
 
     // Inline fallback: adopted/global CSS may not apply here; `left`/`top` only work with fixed positioning.
     menu.style.setProperty("position", "fixed");

@@ -298,7 +298,10 @@ function setupExplorerEvents(
                     action: () => opts.shellContext?.navigate?.("home")
                 },
                 ...extra
-            ]);
+            ], {
+                anchor: event.target instanceof Element ? event.target : explorer,
+                resolveOverlayMountPoint: opts.shellContext?.resolveOverlayMountPoint
+            });
         },
         listenerOpts
     );

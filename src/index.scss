@@ -79,19 +79,10 @@
 
     @layer shell {
         /*
-         * Minimal shell uses min-block-size: fit-content on [data-view], which
-         * prevents the file grid from receiving a bounded height — keep explorer
-         * flex-fill and scroll inside the file manager.
+         * Minimal / immersive: flex-fill for explorer under default slot — selectors live in
+         * `minimal-shell/minimal.scss` as `slot:not([name])::slotted([data-view="explorer"])` because
+         * the view is not a DOM child of `.app-shell__content` (shadow projection).
          */
-        :where(.app-shell__content) > [data-view="explorer"] {
-            display: flex !important;
-            flex-direction: column !important;
-            min-block-size: 0 !important;
-            block-size: 100% !important;
-            max-block-size: 100% !important;
-            overflow: hidden !important;
-        }
-
         :host:has(.view-explorer) {
             display: flex;
             flex-direction: column;
