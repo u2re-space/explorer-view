@@ -52,7 +52,7 @@ const ensureStyle = (): void => {
     const style = document.createElement("style");
     style.id = "cw-unified-context-menu-style";
     style.textContent = `
-        /* WHY: Menu mounts on shell `[data-shell-overlays]`, app overlay, or body — Veela tokens when present. */
+        /* WHY: Menu mounts on shell [data-shell-overlays], app overlay, or body — Veela tokens when present. */
         .cw-context-menu-layer {
             position: fixed;
             inset: 0;

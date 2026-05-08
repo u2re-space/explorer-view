@@ -340,18 +340,21 @@
         text-overflow: ellipsis;
     }
 
+    /*
+     * WHY: Launcher captions (`[data-layer="labels"]`) must not inherit `aspect-ratio: 1/1` on the text span — it squares the pill height to the caption width.
+     */
+    .ui-ws-item:not([data-layer="labels"]) span {
+        pointer-events: none;
+        aspect-ratio: 1 / 1;
+        inline-size: fit-content;
+        block-size: fit-content;
+        display: inline;
+    }
+
     .ui-ws-item {
         cursor: pointer;
         user-select: none;
         pointer-events: auto;
-
-        span {
-            pointer-events: none;
-            aspect-ratio: 1 / 1;
-            inline-size: fit-content;
-            block-size: fit-content;
-            display: inline;
-        }
 
         &:active,
         &:has(:active) {
