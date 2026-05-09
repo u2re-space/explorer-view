@@ -1,5 +1,5 @@
 import { speedDialItems } from "core/store/StateStorage";
-import { resolveOverlayMountPoint } from "boot/shell-slots";
+import { openUnifiedContextMenu, type ContextMenuEntry } from "./ts/ContextMenu";
 
 //
 export type ContextMenuItem = {
@@ -9,6 +9,10 @@ export type ContextMenuItem = {
     action: () => void;
 };
 
+/**
+ * Empty-area / shell context menu for Explorer.
+ * Delegates to unified menu (icons, vertical layout, overlay mount, no backdrop-filter mask bugs).
+ */
 export const openExplorerContextMenu = (
     x: number,
     y: number,
@@ -18,75 +22,21 @@ export const openExplorerContextMenu = (
         resolveOverlayMountPoint?: (anchor?: Element | null) => HTMLElement;
     }
 ): void => {
-    const menu = document.createElement("div");
-    menu.className = "rs-explorer-context-menu";
-    menu.setAttribute("role", "menu");
+    const entries: ContextMenuEntry[] = items.map((item) => ({
+        id: item.id,
+        label: item.label,
+        ...(item.icon ? { icon: item.icon } : {}),
+        action: () => item.action(),
+    }));
 
-    const closeMenu = () => {
-        document.removeEventListener("click", onDocClick, true);
-        document.removeEventListener("keydown", onKey, true);
-        menu.remove();
-    };
-
-    const onDocClick = (ev: MouseEvent) => {
-        if (!menu.contains(ev.target as Node)) closeMenu();
-    };
-
-    const onKey = (ev: KeyboardEvent) => {
-        if (ev.key === "Escape") {
-            ev.preventDefault();
-            closeMenu();
-        }
-    };
-
-    for (const item of items) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "rs-explorer-context-menu__item";
-        button.textContent = item.label;
-        button.addEventListener("click", () => {
-            item.action();
-            closeMenu();
-        });
-        menu.append(button);
-    }
-
-    const mount =
-        options?.resolveOverlayMountPoint?.(options?.anchor ?? null) ??
-        resolveOverlayMountPoint(options?.anchor ?? null);
-    mount.append(menu);
-
-    // Inline fallback: adopted/global CSS may not apply here; `left`/`top` only work with fixed positioning.
-    menu.style.setProperty("position", "fixed");
-    menu.style.setProperty("margin", "0");
-    menu.style.setProperty("box-sizing", "border-box");
-    menu.style.setProperty("z-index", "10050");
-
-    const pad = 8;
-    const vw = globalThis.innerWidth;
-    const vh = globalThis.innerHeight;
-    let left = x;
-    let top = y;
-    const rect = menu.getBoundingClientRect();
-    if (left + rect.width > vw - pad) left = Math.max(pad, vw - rect.width - pad);
-    if (top + rect.height > vh - pad) top = Math.max(pad, vh - rect.height - pad);
-    menu.style.left = `${left}px`;
-    menu.style.top = `${top}px`;
-
-    requestAnimationFrame(() => {
-        const r2 = menu.getBoundingClientRect();
-        let l2 = left;
-        let t2 = top;
-        if (l2 + r2.width > vw - pad) l2 = Math.max(pad, vw - r2.width - pad);
-        if (t2 + r2.height > vh - pad) t2 = Math.max(pad, vh - r2.height - pad);
-        menu.style.left = `${l2}px`;
-        menu.style.top = `${t2}px`;
+    openUnifiedContextMenu({
+        x,
+        y,
+        items: entries,
+        compact: true,
+        anchor: options?.anchor ?? null,
+        resolveOverlayMountPoint: options?.resolveOverlayMountPoint,
     });
-
-    queueMicrotask(() => {
-        document.addEventListener("click", onDocClick, true);
-    });
-    document.addEventListener("keydown", onKey, true);
 };
 
 export const requestOpenView = (request: {

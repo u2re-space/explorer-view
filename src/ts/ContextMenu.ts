@@ -14,6 +14,9 @@ type ContextMenuEntry = {
     action: () => void | Promise<void>;
 };
 
+/** WHY: Must sit above `.env-shell-chrome` (see environment-shell `_variables.scss` $z-shell-chrome ~2.1e9) and near `[data-env-shell-overlays]` pass-through layer. */
+const CONTEXT_MENU_LAYER_Z_FALLBACK = "2147483640";
+
 type ContextMenuOpenRequest = {
     x: number;
     y: number;
@@ -45,136 +48,370 @@ const supportsAnchorPositioning = typeof CSS !== "undefined"
         || CSS.supports("anchor-name: --cw-anchor-test"));
 const ENABLE_CSS_ANCHOR_POSITIONING = false;
 
+const IMP_CSS = "important";
+
+/**
+ * WHY: Host apps load FL-UI native `button { … !important … }`; CSS files alone lose to style-attribute precedence.
+ * Stamping palette + transparent rows avoids “gray slab per row”.
+ */
+function stampUnifiedContextMenuPanelChrome(menu: HTMLElement, compact: boolean): void {
+    const light =
+        typeof matchMedia !== "undefined" &&
+        matchMedia("(prefers-color-scheme: light)").matches;
+    menu.style.setProperty("position", "fixed", IMP_CSS);
+    menu.style.setProperty("box-sizing", "border-box", IMP_CSS);
+    menu.style.setProperty("min-width", compact ? "188px" : "220px", IMP_CSS);
+    menu.style.setProperty("max-width", "min(320px, calc(100vw - 24px))", IMP_CSS);
+    menu.style.setProperty("padding", compact ? "0.3rem" : "0.4rem", IMP_CSS);
+    menu.style.setProperty("border-radius", "14px", IMP_CSS);
+    menu.style.setProperty("pointer-events", "auto", IMP_CSS);
+    /*
+     * WHY: No backdrop-blur on the menu panel. Chromium + layered env-shell overlays (`isolation: isolate`)
+     * reliably drop Phosphor mask-based ui-icon ::before paint when an ancestor composite uses backdrop-filter.
+     * Slightly stronger opaque fill approximates glass without compositor bugs.
+     */
+    menu.style.setProperty("-webkit-backdrop-filter", "none", IMP_CSS);
+    menu.style.setProperty("backdrop-filter", "none", IMP_CSS);
+    if (light) {
+        menu.style.setProperty("border", "1px solid rgba(15, 23, 42, 0.14)", IMP_CSS);
+        menu.style.setProperty("background", "rgba(241, 245, 249, 0.98)", IMP_CSS);
+        menu.style.setProperty("color", "#0f172a", IMP_CSS);
+        menu.style.setProperty(
+            "box-shadow",
+            "0 14px 36px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.06)",
+            IMP_CSS
+        );
+    } else {
+        menu.style.setProperty("border", "1px solid rgba(255, 255, 255, 0.1)", IMP_CSS);
+        menu.style.setProperty("background", "rgba(15, 23, 42, 0.97)", IMP_CSS);
+        menu.style.setProperty("color", "#e8eaed", IMP_CSS);
+        menu.style.setProperty(
+            "box-shadow",
+            "0 14px 36px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06)",
+            IMP_CSS
+        );
+    }
+}
+
+function stampUnifiedContextMenuListChrome(list: HTMLUListElement): void {
+    list.style.setProperty("list-style", "none", IMP_CSS);
+    list.style.setProperty("list-style-type", "none", IMP_CSS);
+    list.style.setProperty("margin", "0", IMP_CSS);
+    list.style.setProperty("padding", "0", IMP_CSS);
+    list.style.setProperty("display", "flex", IMP_CSS);
+    list.style.setProperty("flex-direction", "column", IMP_CSS);
+    list.style.setProperty("align-items", "stretch", IMP_CSS);
+    list.style.setProperty("gap", "0.2rem", IMP_CSS);
+    list.style.setProperty("width", "100%", IMP_CSS);
+    list.style.setProperty("box-sizing", "border-box", IMP_CSS);
+    list.style.setProperty("text-align", "left", IMP_CSS);
+}
+
+function stampUnifiedContextMenuLiChrome(li: HTMLLIElement): void {
+    li.style.setProperty("list-style", "none", IMP_CSS);
+    li.style.setProperty("list-style-type", "none", IMP_CSS);
+    li.style.setProperty("margin", "0", IMP_CSS);
+    li.style.setProperty("padding", "0", IMP_CSS);
+    li.style.setProperty("width", "100%", IMP_CSS);
+    li.style.setProperty("display", "block", IMP_CSS);
+    li.style.setProperty("box-sizing", "border-box", IMP_CSS);
+}
+
+function stampUnifiedContextMenuRowChrome(button: HTMLButtonElement, danger: boolean): void {
+    const light =
+        typeof matchMedia !== "undefined" &&
+        matchMedia("(prefers-color-scheme: light)").matches;
+    button.style.setProperty("appearance", "none", IMP_CSS);
+    button.style.setProperty("-webkit-appearance", "none", IMP_CSS);
+    button.style.setProperty("box-sizing", "border-box", IMP_CSS);
+    button.style.setProperty("width", "100%", IMP_CSS);
+    button.style.setProperty("max-width", "100%", IMP_CSS);
+    button.style.setProperty("margin", "0", IMP_CSS);
+    button.style.setProperty("display", "grid", IMP_CSS);
+    button.style.setProperty("grid-template-columns", "1.375rem minmax(0, 1fr) auto", IMP_CSS);
+    button.style.setProperty("align-items", "center", IMP_CSS);
+    button.style.setProperty("justify-items", "start", IMP_CSS);
+    button.style.setProperty("gap", "0.55rem", IMP_CSS);
+    button.style.setProperty("border-style", "none", IMP_CSS);
+    button.style.setProperty("border-width", "0", IMP_CSS);
+    button.style.setProperty("outline", "none", IMP_CSS);
+    button.style.setProperty("border-radius", "10px", IMP_CSS);
+    button.style.setProperty("padding", "0.5rem 0.6rem", IMP_CSS);
+    button.style.setProperty("min-height", "2.35rem", IMP_CSS);
+    button.style.setProperty("font-family", "inherit", IMP_CSS);
+    button.style.setProperty("font-size", "0.8125rem", IMP_CSS);
+    button.style.setProperty("font-weight", "400", IMP_CSS);
+    button.style.setProperty("line-height", "1.25", IMP_CSS);
+    button.style.setProperty("text-align", "start", IMP_CSS);
+    button.style.setProperty("cursor", "pointer", IMP_CSS);
+    button.style.setProperty("background", "none", IMP_CSS);
+    button.style.setProperty("background-color", "transparent", IMP_CSS);
+    button.style.setProperty("background-image", "none", IMP_CSS);
+    button.style.setProperty("box-shadow", "none", IMP_CSS);
+    button.style.setProperty("transition", "none", IMP_CSS);
+    if (!danger) {
+        button.style.setProperty("color", "inherit", IMP_CSS);
+    } else if (light) {
+        button.style.setProperty("color", "#b91c1c", IMP_CSS);
+    } else {
+        button.style.setProperty("color", "#fca5a5", IMP_CSS);
+    }
+}
+
 const ensureStyle = (): void => {
     if (styleMounted) return;
     styleMounted = true;
 
     const style = document.createElement("style");
     style.id = "cw-unified-context-menu-style";
+    /*
+     * NOTE: Shell apps load FL-UI `patch-global-native-controls` `@layer components { button { … } }` (inline-flex,
+     * padded chip chrome, `--color-bg-alt`). Cascade-layer `button` still loses to **unlayered** rules, but some hosts
+     * ship later unlayered `button { … }` or token fallbacks confuse layout; **`!important` + `button.cw-context-menu__item`
+     * keeps one panel + horizontal icon/label rows stable on home / env-shell.
+     */
     style.textContent = `
-        /* WHY: Menu mounts on shell [data-shell-overlays], app overlay, or body — Veela tokens when present. */
         .cw-context-menu-layer {
             position: fixed;
             inset: 0;
-            z-index: 2000;
+            z-index: var(--cw-context-menu-layer-z, ${CONTEXT_MENU_LAYER_Z_FALLBACK});
             pointer-events: none;
         }
 
         .cw-context-menu {
             position: fixed;
-            min-inline-size: 220px;
-            max-inline-size: min(320px, calc(100vw - 24px));
+            box-sizing: border-box;
+            min-width: 220px;
+            max-width: min(320px, calc(100vw - 24px));
             padding: 0.4rem;
             border-radius: 14px;
-            border: 1px solid color-mix(in oklab, var(--color-outline, light-dark(rgba(15, 23, 42, 0.12), rgba(255, 255, 255, 0.08))) 100%, transparent);
             color-scheme: light dark;
-            background: color-mix(
-                in oklab,
-                var(--color-surface-container, var(--color-surface-elevated, var(--color-surface, light-dark(#f1f5f9, #1e293b)))) 96%,
-                transparent
-            );
+            font-family: var(--cw-context-menu-font, ui-sans-serif, system-ui, sans-serif);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.97);
+            color: #e8eaed;
             box-shadow:
-                var(
-                    --elev-3,
-                    light-dark(
-                        0 14px 36px rgba(15, 23, 42, 0.12),
-                        0 14px 36px rgba(0, 0, 0, 0.45)
-                    )
-                ),
-                0 0 0 1px color-mix(in oklab, var(--color-on-surface, light-dark(#0f172a, #f8fafc)) 7%, transparent);
-            backdrop-filter: blur(14px);
+                0 14px 36px rgba(0, 0, 0, 0.45),
+                0 0 0 1px rgba(255, 255, 255, 0.06);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
             pointer-events: auto;
             user-select: none;
         }
 
+        @media (prefers-color-scheme: light) {
+            .cw-context-menu {
+                border: 1px solid rgba(15, 23, 42, 0.14);
+                background: rgba(241, 245, 249, 0.98);
+                color: #0f172a;
+                box-shadow:
+                    0 14px 36px rgba(15, 23, 42, 0.12),
+                    0 0 0 1px rgba(15, 23, 42, 0.06);
+            }
+        }
+
         .cw-context-menu.cw-context-menu--compact {
-            min-inline-size: 188px;
+            min-width: 188px;
             padding: 0.3rem;
         }
 
         .cw-context-menu__list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
+            list-style: none !important;
+            list-style-type: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
             gap: 0.2rem;
-            justify-items: stretch;
+            width: 100%;
+            box-sizing: border-box;
             text-align: left;
         }
 
-        .cw-context-menu__item {
-            inline-size: 100%;
-            display: grid;
-            grid-template-columns: 1.375rem minmax(0, 1fr) auto;
-            align-items: center;
-            gap: 0.55rem;
-            border: 0;
-            border-radius: 10px;
-            background: transparent;
-            color: var(--color-on-surface, light-dark(#0f172a, #e8eaed));
-            padding: 0.5rem 0.6rem;
-            min-block-size: 2.35rem;
-            font-size: 0.8125rem;
-            line-height: 1.25;
+        .cw-context-menu__list > li {
+            list-style: none !important;
+            list-style-type: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100%;
+            box-sizing: border-box;
+            display: block !important;
+        }
+
+        /*
+         * INVARIANT: one horizontal row per item (icon | label | chevron).
+         * Rows stay transparent inside the slab; FL-UI host button styling must not turn each row into its own gray chip.
+         */
+        button.cw-context-menu__item,
+        .cw-context-menu button.cw-context-menu__item {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            display: grid !important;
+            grid-template-columns: 1.375rem minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            justify-items: start !important;
+            justify-content: start !important;
+            flex-direction: row !important;
+            gap: 0.55rem !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 0.5rem 0.6rem !important;
+            min-height: 2.35rem !important;
+            font: inherit !important;
+            font-size: 0.8125rem !important;
+            font-weight: 400 !important;
+            line-height: 1.25 !important;
             text-align: start !important;
-            cursor: pointer;
-            justify-items: start;
+            cursor: pointer !important;
+            background: transparent !important;
+            color: inherit !important;
+            box-shadow: none !important;
+            transition: none !important;
         }
 
-        .cw-context-menu__item:hover,
-        .cw-context-menu__item:focus-visible {
-            outline: none;
-            background: color-mix(in oklab, var(--color-on-surface, light-dark(#0f172a, #ffffff)) 8%, transparent);
+        button.cw-context-menu__item:hover,
+        .cw-context-menu button.cw-context-menu__item:hover,
+        button.cw-context-menu__item:focus-visible,
+        .cw-context-menu button.cw-context-menu__item:focus-visible {
+            outline: none !important;
+            background: rgba(255, 255, 255, 0.08) !important;
         }
 
-        .cw-context-menu__item[disabled] {
-            opacity: 0.45;
-            cursor: default;
+        @media (prefers-color-scheme: light) {
+            button.cw-context-menu__item:hover,
+            .cw-context-menu button.cw-context-menu__item:hover,
+            button.cw-context-menu__item:focus-visible,
+            .cw-context-menu button.cw-context-menu__item:focus-visible {
+                background: rgba(15, 23, 42, 0.08) !important;
+            }
+        }
+
+        button.cw-context-menu__item[disabled],
+        .cw-context-menu button.cw-context-menu__item[disabled] {
+            opacity: 0.45 !important;
+            cursor: default !important;
         }
 
         .cw-context-menu__item--danger {
-            color: var(--color-error, light-dark(#b91c1c, #fca5a5));
+            color: #fca5a5 !important;
+        }
+
+        @media (prefers-color-scheme: light) {
+            .cw-context-menu__item--danger {
+                color: #b91c1c !important;
+            }
         }
 
         .cw-context-menu__icon {
-            justify-self: center;
-            inline-size: 1.375rem;
-            block-size: 1.375rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            justify-self: center !important;
+            width: 1.375rem !important;
+            height: 1.375rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /*
+         * WHY:
+         * 1) Inherited registered icon-color can be fully transparent — force currentColor.
+         * 2) Phosphor min-size uses min(var(--icon-size), 100%); when percentage base is cyclic/0,
+         *    mask ::before collapses — lock an explicit px box matching --icon-size.
+         */
+        .cw-context-menu__icon ui-icon,
+        .cw-context-menu__chevron ui-icon {
+            flex: 0 0 auto !important;
+            flex-shrink: 0 !important;
+            box-sizing: border-box !important;
+            width: var(--icon-size, 1.125rem) !important;
+            height: var(--icon-size, 1.125rem) !important;
+            min-width: var(--icon-size, 1.125rem) !important;
+            min-height: var(--icon-size, 1.125rem) !important;
+            min-inline-size: var(--icon-size, 1.125rem) !important;
+            min-block-size: var(--icon-size, 1.125rem) !important;
+            inline-size: var(--icon-size, 1.125rem) !important;
+            block-size: var(--icon-size, 1.125rem) !important;
+            max-inline-size: var(--icon-size, 1.125rem) !important;
+            max-block-size: var(--icon-size, 1.125rem) !important;
+            --icon-padding: 0px !important;
+            color: inherit !important;
+            --icon-color: currentColor !important;
+            overflow: visible !important;
+            pointer-events: none !important;
         }
 
         .cw-context-menu__icon ui-icon {
-            --icon-size: 1.125rem;
-            pointer-events: none;
+            --icon-size: 1.125rem !important;
         }
 
         .cw-context-menu__label {
-            justify-self: stretch;
+            justify-self: stretch !important;
             text-align: start !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-inline-size: 0;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            min-width: 0 !important;
         }
 
         .cw-context-menu__chevron {
-            justify-self: end;
-            opacity: 0.72;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            justify-self: end !important;
+            opacity: 0.72 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         .cw-context-menu__chevron ui-icon {
-            --icon-size: 0.85rem;
-            pointer-events: none;
+            --icon-size: 0.85rem !important;
+        }
+
+        @supports (color: color-mix(in oklab, white 50%, black)) {
+            .cw-context-menu {
+                border: 1px solid color-mix(in oklab, var(--wf-md-outline-variant, transparent) 100%, transparent);
+                background: color-mix(in oklab, var(--wf-md-surf-container, rgba(30, 41, 59, 0.92)) 96%, transparent);
+                color: var(--wf-md-on-surface, var(--color-on-surface, inherit));
+                box-shadow:
+                    var(--elev-3, 0 14px 36px rgba(0, 0, 0, 0.45)),
+                    0 0 0 1px color-mix(in oklab, var(--wf-md-on-surface, #fff) 7%, transparent);
+            }
+            button.cw-context-menu__item:hover,
+            .cw-context-menu button.cw-context-menu__item:hover,
+            button.cw-context-menu__item:focus-visible,
+            .cw-context-menu button.cw-context-menu__item:focus-visible {
+                background: color-mix(in oklab, var(--wf-md-on-surface, #fff) 8%, transparent) !important;
+            }
         }
     `;
     document.head.appendChild(style);
 };
+
+/** Re-run phosphor hydration after DOM connect (helps IO-deferred raster icons). */
+function refreshContextMenuUiIcons(root: HTMLElement): void {
+    if (typeof customElements !== "undefined" && typeof customElements.upgrade === "function") {
+        try {
+            customElements.upgrade(root);
+        } catch {
+            // ignore upgrade failures on partial trees / strict mode snapshots
+        }
+    }
+    for (const node of root.querySelectorAll("ui-icon")) {
+        const el = node as HTMLElement & { updateIcon?: () => unknown };
+        if (typeof el.updateIcon === "function") {
+            el.updateIcon.call(node);
+        }
+    }
+}
+
+function appendUiIcon(target: HTMLElement, iconName: string): void {
+    const el = document.createElement("ui-icon");
+    el.setAttribute("icon", iconName);
+    el.setAttribute("icon-style", "duotone");
+    target.append(el);
+}
 
 const clearCleanup = (): void => {
     for (const fn of cleanupFns) {
@@ -247,9 +484,12 @@ const buildMenuElement = (
     menu.className = `cw-context-menu${compact ? " cw-context-menu--compact" : ""}`;
     menu.setAttribute("role", "menu");
     menu.dataset.menuDepth = String(depth);
+    /* Flyouts paint above ancestor menus inside the fixed layer (`depth` stacks with siblings). */
+    menu.style.zIndex = String(depth + 1);
 
     const list = document.createElement("ul");
     list.className = "cw-context-menu__list";
+    stampUnifiedContextMenuListChrome(list);
     menu.appendChild(list);
 
     const openSubmenu = (item: ContextMenuEntry, anchorButton: HTMLButtonElement, nextDepth: number): void => {
@@ -305,11 +545,26 @@ const buildMenuElement = (
         button.disabled = Boolean(item.disabled);
 
         const hasChildren = Boolean(item.children?.length);
-        button.innerHTML = `
-            <span class="cw-context-menu__icon">${item.icon ? `<ui-icon icon="${item.icon}"></ui-icon>` : ""}</span>
-            <span class="cw-context-menu__label">${item.label}</span>
-            <span class="cw-context-menu__chevron">${hasChildren ? `<ui-icon icon="caret-right"></ui-icon>` : ""}</span>
-        `;
+
+        const iconWrap = document.createElement("span");
+        iconWrap.className = "cw-context-menu__icon";
+        if (item.icon) {
+            appendUiIcon(iconWrap, item.icon);
+        }
+
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "cw-context-menu__label";
+        labelSpan.textContent = item.label;
+
+        const chevronWrap = document.createElement("span");
+        chevronWrap.className = "cw-context-menu__chevron";
+        if (hasChildren) {
+            appendUiIcon(chevronWrap, "caret-right");
+        }
+
+        button.append(iconWrap, labelSpan, chevronWrap);
+
+        stampUnifiedContextMenuRowChrome(button, Boolean(item.danger));
 
         if (hasChildren) {
             const nextDepth = depth + 1;
@@ -341,9 +596,12 @@ const buildMenuElement = (
         }
 
         const li = document.createElement("li");
+        stampUnifiedContextMenuLiChrome(li);
         li.appendChild(button);
         list.appendChild(li);
     }
+
+    stampUnifiedContextMenuPanelChrome(menu, compact);
 
     menu.addEventListener("pointerenter", () => cancelScheduledCloseFromDepth(depth));
     menu.addEventListener("pointerleave", () => {
@@ -400,19 +658,63 @@ export const openUnifiedContextMenu = (request: ContextMenuOpenRequest): void =>
     rootMenu = menu;
     layer.appendChild(menu);
     placeMenu(menu, request.x, request.y);
+    queueMicrotask(() => {
+        if (session !== menuSession || !menu.isConnected) return;
+        refreshContextMenuUiIcons(menu);
+        requestAnimationFrame(() => {
+            if (session !== menuSession || !menu.isConnected) return;
+            refreshContextMenuUiIcons(menu);
+        });
+    });
 
-    const onPointerDown = (event: Event) => {
+    /**
+     * WHY: `menuLayer.contains(event.target)` is false for nodes inside open shadow trees (e.g. ui-icon internals).
+     * That made document-capture pointerdown treat in-menu presses as "outside" → menu removed before click fires.
+     */
+    const eventPathTouchesOpenMenu = (event: Event): boolean => {
+        if (!menuLayer?.isConnected || !rootMenu) return false;
+
+        const rawPath =
+            typeof (event as PointerEvent).composedPath === "function"
+                ? (event as PointerEvent).composedPath()
+                : [];
+        const path = Array.isArray(rawPath) && rawPath.length ? rawPath : [];
+
+        for (const node of path) {
+            if (!(node instanceof Element)) continue;
+            if (node === menuLayer || node === rootMenu) return true;
+            if (menuLayer.contains(node)) return true;
+            if (node.classList?.contains?.("cw-context-menu") || node.closest?.(".cw-context-menu")) {
+                return true;
+            }
+        }
+
+        const t = event.target;
+        if (t instanceof Node && menuLayer.contains(t)) return true;
+        if (t instanceof Element && t.closest?.(".cw-context-menu")) return true;
+        return false;
+    };
+
+    const onPointerDown = (event: Event): void => {
         if (session !== menuSession || !menuLayer?.isConnected) return;
-        const target = event.target as Node | null;
-        if (target && menuLayer.contains(target)) return;
+        if (eventPathTouchesOpenMenu(event)) return;
         closeUnifiedContextMenu();
     };
 
-    const onMenuInternalClick = (event: Event) => {
+    const onMenuInternalClick = (event: Event): void => {
         if (session !== menuSession || !rootMenu?.isConnected) return;
         const target = event.target as HTMLElement | null;
         if (!target) return;
-        const parentItem = target.closest?.(".cw-context-menu__item") as HTMLElement | null;
+        let parentItem = target.closest?.(".cw-context-menu__item") as HTMLElement | null;
+        /* Shadow-internal targets do not ascend into light DOM for closest(); composedPath keeps the row button reachable. */
+        if (!parentItem && typeof (event as MouseEvent).composedPath === "function") {
+            for (const node of (event as MouseEvent).composedPath()) {
+                if (node instanceof Element && node.classList?.contains?.("cw-context-menu__item")) {
+                    parentItem = node as HTMLElement;
+                    break;
+                }
+            }
+        }
         if (!parentItem) {
             closeSubmenusFromDepth(1);
             return;
@@ -428,21 +730,26 @@ export const openUnifiedContextMenu = (request: ContextMenuOpenRequest): void =>
         if (event.key === "Escape") closeUnifiedContextMenu();
     };
 
-    const close = () => closeUnifiedContextMenu();
+    const close = (): void => closeUnifiedContextMenu();
 
-    document.addEventListener("pointerdown", onPointerDown, { capture: true });
-    document.addEventListener("contextmenu", onPointerDown, { capture: true });
-    document.addEventListener("keydown", onEscape);
-    menu.addEventListener("click", onMenuInternalClick, { capture: true });
-    window.addEventListener("resize", close, { passive: true });
-    window.addEventListener("blur", close, { passive: true });
+    /* Defer closing listeners: same-gesture pointer phases after contextmenu must not treat in-menu hits as outside. */
+    queueMicrotask(() => {
+        if (session !== menuSession) return;
 
-    cleanupFns.push(() => document.removeEventListener("pointerdown", onPointerDown, { capture: true } as EventListenerOptions));
-    cleanupFns.push(() => document.removeEventListener("contextmenu", onPointerDown, { capture: true } as EventListenerOptions));
-    cleanupFns.push(() => document.removeEventListener("keydown", onEscape));
-    cleanupFns.push(() => menu.removeEventListener("click", onMenuInternalClick, { capture: true } as EventListenerOptions));
-    cleanupFns.push(() => window.removeEventListener("resize", close));
-    cleanupFns.push(() => window.removeEventListener("blur", close));
+        document.addEventListener("pointerdown", onPointerDown, { capture: true });
+        document.addEventListener("contextmenu", onPointerDown, { capture: true });
+        document.addEventListener("keydown", onEscape);
+        menu.addEventListener("click", onMenuInternalClick, { capture: true });
+        window.addEventListener("resize", close, { passive: true });
+        window.addEventListener("blur", close, { passive: true });
+
+        cleanupFns.push(() => document.removeEventListener("pointerdown", onPointerDown, { capture: true } as EventListenerOptions));
+        cleanupFns.push(() => document.removeEventListener("contextmenu", onPointerDown, { capture: true } as EventListenerOptions));
+        cleanupFns.push(() => document.removeEventListener("keydown", onEscape));
+        cleanupFns.push(() => menu.removeEventListener("click", onMenuInternalClick, { capture: true } as EventListenerOptions));
+        cleanupFns.push(() => window.removeEventListener("resize", close));
+        cleanupFns.push(() => window.removeEventListener("blur", close));
+    });
 };
 
 export type { ContextMenuEntry, ContextMenuOpenRequest };

@@ -244,65 +244,7 @@
             color: var(--color-on-surface-variant);
         }
 
-        /* Empty-path context menu — floating panel, no hard border */
-        .rs-explorer-context-menu {
-            position: fixed;
-            z-index: 10050;
-            min-inline-size: 12rem;
-            padding: var(--explorer-menu-pad, 0.35rem);
-            border-radius: var(--explorer-menu-radius, 0.75rem);
-            border: 1px solid color-mix(in oklab, var(--color-outline, light-dark(rgba(15, 23, 42, 0.14), rgba(255, 255, 255, 0.08))) 100%, transparent);
-            color-scheme: light dark;
-            background: color-mix(
-                in oklab,
-                var(--color-surface-container-high, var(--color-surface-container, var(--color-surface, light-dark(#e2e8f0, #334155)))) 94%,
-                transparent
-            );
-            color: var(--color-on-surface, light-dark(#0f172a, #e8eaed));
-            box-shadow:
-                var(
-                    --elev-3,
-                    light-dark(
-                        0 8px 26px rgb(15 23 42 / 0.12),
-                        0 8px 26px rgb(0 0 0 / 0.28)
-                    )
-                ),
-                0 0 0 1px color-mix(in oklab, var(--color-on-surface, light-dark(#0f172a, #fff)) 7%, transparent);
-            backdrop-filter: blur(12px);
-            font-family: var(--font-family, var(--explorer-font-sans, system-ui, sans-serif));
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-        }
-
-        .rs-explorer-context-menu__item {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 0.5rem;
-            inline-size: 100%;
-            text-align: start;
-            padding: 0.5rem 0.7rem;
-            border: none;
-            border-radius: calc(var(--explorer-menu-radius, 0.75rem) - 0.15rem);
-            background: transparent;
-            color: inherit;
-            font: inherit;
-            font-size: 0.8125rem;
-            line-height: 1.25;
-            cursor: pointer;
-            min-block-size: 2.25rem;
-            box-sizing: border-box;
-
-            &:hover {
-                background: color-mix(in oklab, var(--color-on-surface, #fff) 9%, transparent);
-            }
-
-            &:focus-visible {
-                outline: 2px solid color-mix(in oklab, var(--color-primary, #3794ff) 65%, transparent);
-                outline-offset: 0;
-            }
-        }
+        /* Empty-area Explorer menu: `openExplorerContextMenu` → `openUnifiedContextMenu` (.cw-context-menu), not .rs-explorer-* */
     }
 
     @layer animations {
